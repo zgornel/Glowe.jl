@@ -1,0 +1,6 @@
+authors = ["Corneliu Cofaru <cornel@oxoaresearch.com>"]
+name = "Glowe"
+uuid = "41444f52-fbde-11e8-14fe-eb60a09dbaaa"
+version = "0.1.0"
+
+[deps]
