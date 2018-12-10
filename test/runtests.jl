@@ -1,3 +1,6 @@
 using Test
+using Glowe
 
-@test true
+@testset "Model training" begin
+    include("train.jl")
+end

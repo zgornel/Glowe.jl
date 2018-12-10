@@ -1,6 +1,7 @@
-authors = ["Corneliu Cofaru <cornel@oxoaresearch.com>"]
 name = "Glowe"
 uuid = "41444f52-fbde-11e8-14fe-eb60a09dbaaa"
+authors = ["Corneliu Cofaru <cornel@oxoaresearch.com>"]
 version = "0.1.0"
 
 [deps]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
