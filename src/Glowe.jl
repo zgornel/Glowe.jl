@@ -32,11 +32,17 @@
 
 module Glowe
 
-    export vocab_count,
-           cooccur,
-           shuffle,
-           glove
+    using LinearAlgebra
+    import Base: show, size
+
+    export vocab_count, cooccur, shuffle, glove,
+           WordVectors, index, size,
+           vocabulary, in_vocabulary,
+           get_vector, cosine, cosine_similar_words,
+           analogy, analogy_words, similarity,
+           wordvectors
 
     include("interface.jl")
+    include("wordvectors.jl")
 
 end # module

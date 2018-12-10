@@ -32,10 +32,25 @@ for BINARY in BINARY_OPTS
               threads=NUM_THREADS, x_max=X_MAX, iter=MAX_ITER,
               vector_size=VECTOR_SIZE, binary=BINARY,
               write_header=HEADER, verbose=VERBOSE)
+        model_file = joinpath(SAVE_FILE) * ifelse(BINARY==1, ".bin", ".txt")
+        TYPE = Float32
+        if BINARY == 0
+            model = wordvectors(model_file,
+                                TYPE,
+                                header=(HEADER==1),
+                                kind=ifelse(BINARY==1, :binary, :text))
+            len_vecs, num_words = size(model)
+            @test model.vectors isa Matrix{TYPE}
+            @test len_vecs == VECTOR_SIZE
+        else
+            # Loading binary GloVe embeddings not yet supported
+            # TODO(Corneliu) Implement
+            @test true
+        end
     end
 end
 
-#rm(TMPDIR, recursive=true, force=true)
+rm(TMPDIR, recursive=true, force=true)
 
 println("training passed test...")
 
