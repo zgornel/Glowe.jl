@@ -33,6 +33,7 @@
 module Glowe
 
     using LinearAlgebra
+    using Statistics
     import Base: show, size
 
     export vocab_count, cooccur, shuffle, glove,

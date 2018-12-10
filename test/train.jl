@@ -1,5 +1,4 @@
 # test various training parameters
-
 bigdata = joinpath(dirname(@__FILE__),"..", "data", "big.txt")
 
 TMPDIR = "./tmp"
