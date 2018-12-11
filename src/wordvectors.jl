@@ -166,14 +166,17 @@ or binary (`:binary`); default `:text`
 contains a header i.e. number of lines, columns or not; default `false`
   * `normalize:Bool` specifies whether to normalize the embedding vectors
 i.e. return unit vectors; default true
+* `vocabulary::AbstractString` path to the vocabulary file generated
+with `vocab_count` (needed for binary embeddings); default ""
 """
 function wordvectors(filename::AbstractString,
                      ::Type{T};
                      kind::Symbol=:text,
                      header::Bool=false,
-                     normalize::Bool=true) where T <: Real
+                     normalize::Bool=true,
+                     vocabulary::AbstractString="") where T <: Real
     if kind == :binary
-        return _from_binary(T, filename, normalize)
+        return _from_binary(T, filename, vocabulary, normalize)
     elseif kind == :text
         if header
             return _from_text_header(T, filename, normalize)
@@ -196,23 +199,36 @@ wordvectors(filename::AbstractString;
 # Generate a WordVectors object from binary file
 function _from_binary(::Type{T},
                       filename::AbstractString,
+                      vocabulary::AbstractString,
                       normalize::Bool=true) where T<:Real
-    ### open(filename) do f
-    ###     vocab = Vector{String}(undef, 0)
-    ###     vectors = Vector{Vector{T}}()
-    ###     for i in 1:vocab_size
-    ###         vocab[i] = strip(readuntil(f, '\n'))
-    ###         vector = reinterpret(Float32, read(f, binary_length))
-    ###         if normalize
-    ###             vector = vector ./ norm(vector)  # unit vector
-    ###         end
-    ###         vectors[:,i] = T.(vector)
-    ###         read(f, sb) # new line
-    ###     end
-    ###     return WordVectors(vocab, vectors)
-    ### end
-    #TODO(Corneliu): Implement
-    @error "Loading GloVe binary embeddings not yet supported."
+    vocab = Vector{String}(undef, 0)
+    open(vocabulary) do f
+        for line in eachline(f)
+            word, count = split(line, ' ')
+            push!(vocab, word)
+        end
+    end
+    vocab_size = length(vocab)
+    open(filename) do f
+        nb = 0  # byte count
+        while !eof(f)
+            read(f,1)
+            nb+= 1
+        end
+        # 2 sets of parameters, 8 bytes for a vector element
+        vector_size = Int(nb / (2 * 8 * vocab_size))
+        vectors = Matrix{T}(undef, vector_size-1, vocab_size)
+        binary_length = sizeof(Float64) * vector_size
+        seekstart(f)
+        for i in 1:vocab_size
+            vector = reinterpret(Float64, read(f, binary_length))[1:end-1]  # remove bias
+            if normalize
+                vector = vector ./ norm(vector)  # unit vector
+            end
+            vectors[:,i] = T.(vector)
+        end
+        return WordVectors(vocab, vectors)
+    end
 end
 
 # Generate a WordVectors object from text file
