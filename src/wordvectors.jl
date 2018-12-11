@@ -56,12 +56,24 @@ index(wv::WordVectors, word) = wv.vocab_hash[word]
 
 
 """
-    get_vector(wv, word)
+    get_vector(wv, word [; oov=false, oov_key="<unk>")
 
-Return the vector representation of `word` from the WordVectors `wv`.
+Returns the vector representation of `word` from the WordVectors `wv`.
+If `oov` is `true`, the vector corresponding to the key `oov_key` is
+returned for out-of-vocabulary words.
 """
-get_vector(wv::WordVectors, word) =
-      (idx = wv.vocab_hash[word]; wv.vectors[:,idx])
+get_vector(wv::WordVectors,
+           word;
+           oov::Bool=false,
+           oov_key::String="<unk>") = begin
+    if !oov
+        idx = wv.vocab_hash[word];
+        return wv.vectors[:, idx]
+    else
+        idx = get(wv.vocab_hash, word, wv.vocab_hash[oov_key])
+        return wv.vectors[:, idx]
+    end
+end
 
 
 """
