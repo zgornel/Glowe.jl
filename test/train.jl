@@ -9,12 +9,12 @@ VOCAB_FILE = joinpath(TMPDIR, "vocab.txt")
 COOCCURRENCE_FILE = joinpath(TMPDIR, "cooccurrence.bin")
 COOCCURRENCE_SHUF_FILE = joinpath(TMPDIR, "cooccurrence.shuf.bin")
 SAVE_FILE = joinpath(TMPDIR, "vectors")
-VERBOSE = 2
+VERBOSE = 0
 MEMORY = 4.0
 VOCAB_MIN_COUNT = 5
-VECTOR_SIZE = rand(10:50)
-MAX_ITER = rand(3:5)
-WINDOW_SIZE = rand(5:15)
+VECTOR_SIZE = 13
+MAX_ITER = 2
+WINDOW_SIZE = 3
 BINARY_OPTS = [0,1]
 NUM_THREADS = 1
 X_MAX = 10.0
@@ -37,15 +37,16 @@ for BINARY in BINARY_OPTS
             model = wordvectors(model_file,
                                 TYPE,
                                 header=(HEADER==1),
-                                kind=ifelse(BINARY==1, :binary, :text))
-            len_vecs, num_words = size(model)
-            @test model.vectors isa Matrix{TYPE}
-            @test len_vecs == VECTOR_SIZE
+                                kind=:text)
         else
-            # Loading binary GloVe embeddings not yet supported
-            # TODO(Corneliu) Implement
-            @test true
+            model = wordvectors(model_file,
+                                TYPE,
+                                kind=:binary,
+                                vocabulary=VOCAB_FILE)
         end
+        len_vecs, num_words = size(model)
+        @test model.vectors isa Matrix{TYPE}
+        @test len_vecs == VECTOR_SIZE
     end
 end
 
