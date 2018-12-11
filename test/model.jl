@@ -1,5 +1,5 @@
 # test various model functions
-bigdata = joinpath(dirname(@__FILE__),"..", "data", "big.txt")
+bigdata = joinpath(dirname(@__FILE__), "..", "data", "big.txt")
 
 TMPDIR = "./tmp"
 mkpath(TMPDIR)

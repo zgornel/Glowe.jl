@@ -39,7 +39,7 @@ end
 
 
 """
-    cooccur(corpus, vocab, cooccurrences; verbose=2, symmetric=0, window_size=10, memory=4.0, max_product=nothing, overflow_length=nothing, overflow_file="overflow", distance_weighting=1)
+    cooccur(corpus, vocab, cooccurrences; verbose=2, symmetric=0, window_size=15, memory=4.0, max_product=nothing, overflow_length=nothing, overflow_file="overflow", distance_weighting=1)
 
 Calculates word-word cooccurrence statistics.
 

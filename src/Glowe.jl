@@ -26,9 +26,11 @@
 #                                       .,;:;,..;c:;'. . 'cl;. .....
 #                                                 .      ...
 # Glowe.jl - Julia interface to GloVe
-#            Written in Julia at 0x0α Research, by Corneliu Cofaru, 2018
+#            Written in Julia at 0x0α Research
+#			 by Corneliu Cofaru, 2018
 #
-# Original authors: Jeffrey Pennington, Richard Socher, and Christopher D. Manning. 2014
+# Original authors: Jeffrey Pennington, Richard Socher
+#					and Christopher D. Manning. 2014
 
 module Glowe
 
@@ -37,11 +39,13 @@ module Glowe
     import Base: show, size
 
     export vocab_count, cooccur, shuffle, glove,
-           WordVectors, index, size,
+           WordVectors, wordvectors,
+		   index, size,
+		   get_vector,
            vocabulary, in_vocabulary,
-           get_vector, cosine, cosine_similar_words,
-           analogy, analogy_words, similarity,
-           wordvectors
+           cosine, cosine_similar_words,
+           analogy, analogy_words,
+		   similarity
 
     include("interface.jl")
     include("wordvectors.jl")
