@@ -162,8 +162,10 @@ Generate a WordVectors type object from a file.
 # Keyword arguments
   * `kind::Symbol` specifies whether the embeddings file is textual (`:text`)
 or binary (`:binary`); default `:text`
-  * `header::Bool` in text embeddings files specifies whether the file
-contains a header i.e. number of lines, columns or not; default `false`
+  * `header::Union{Nothing, Bool}` in text embeddings files specifies
+  whether the file contains a header i.e. number of lines, columns or not.
+  If the header is `nothing`, the loader will attempt to autodetect the
+  presence of a header; default `nothing`
   * `normalize:Bool` specifies whether to normalize the embedding vectors
 i.e. return unit vectors; default true
 * `vocabulary::AbstractString` path to the vocabulary file generated
@@ -172,12 +174,13 @@ with `vocab_count` (needed for binary embeddings); default ""
 function wordvectors(filename::AbstractString,
                      ::Type{T};
                      kind::Symbol=:text,
-                     header::Bool=false,
+                     header::Union{Nothing, Bool}=nothing,
                      normalize::Bool=true,
                      vocabulary::AbstractString="") where T <: Real
     if kind == :binary
         return _from_binary(T, filename, vocabulary, normalize)
     elseif kind == :text
+        header == nothing && (header = autodetect_header(filename))
         if header
             return _from_text_header(T, filename, normalize)
         else
@@ -185,6 +188,38 @@ function wordvectors(filename::AbstractString,
         end
     else
         throw(ArgumentError("Unknown embedding file kind $(kind)"))
+    end
+end
+
+
+"""
+    autodetect_header(filename)
+
+Function that attempts at autodetecting the presence of a header in a
+GloVe embeddings file in a text format. If the function fails to detect
+a header, a `false` value is returned.
+
+Note: The function explicitly expects a text format for the embeddings.
+The behaviour is undetermined for binary formats and no attempt at
+detecting the file format is done.
+"""
+function autodetect_header(filename::AbstractString)
+    open(filename) do f
+        tokens1 = split(strip(readline(f)), ' ')
+        tokens2 = split(strip(readline(f)), ' ')
+        try
+            # Attempt to parse the first line as header,
+            # the second as an embedding
+            @assert length(tokens1) == 2
+            vocab_size = parse(Int, tokens1[1])
+            vector_size = parse(Int, tokens1[2])
+            vector = map(x-> parse(Float64, x), tokens2[2:end])
+            @assert (vector_size == 2*(length(vector)+1) ||  # `model` is 0
+                     vector_size == length(vector))          # `model` is 1 or 2
+            return true
+        catch
+            return false
+        end
     end
 end
 
@@ -215,6 +250,8 @@ function _from_binary(::Type{T},
             read(f,1)
             nb+= 1
         end
+        #TODO(Corneliu): Add support for choosing whether to load or
+        #                not the bias term
         # 2 sets of parameters, 8 bytes for a vector element
         vector_size = Int(nb / (2 * 8 * vocab_size))
         vectors = Matrix{T}(undef, vector_size-1, vocab_size)

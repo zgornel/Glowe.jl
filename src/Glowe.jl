@@ -40,12 +40,12 @@ module Glowe
 
     export vocab_count, cooccur, shuffle, glove,
            WordVectors, wordvectors,
-		   index, size,
-		   get_vector,
+           index, size,
+           get_vector,
            vocabulary, in_vocabulary,
            cosine, cosine_similar_words,
            analogy, analogy_words,
-		   similarity
+           similarity
 
     include("interface.jl")
     include("wordvectors.jl")

@@ -19,6 +19,7 @@ BINARY_OPTS = [0,1]
 NUM_THREADS = 1
 X_MAX = 10.0
 HEADER_OPTS = [0,1]
+TYPES = [Float32, Float64]
 
 vocab_count(CORPUS, VOCAB_FILE, min_count=VOCAB_MIN_COUNT, verbose=VERBOSE)
 cooccur(CORPUS, VOCAB_FILE, COOCCURRENCE_FILE,
@@ -32,21 +33,21 @@ for BINARY in BINARY_OPTS
               vector_size=VECTOR_SIZE, binary=BINARY,
               write_header=HEADER, verbose=VERBOSE)
         model_file = joinpath(SAVE_FILE) * ifelse(BINARY==1, ".bin", ".txt")
-        TYPE = Float32
-        if BINARY == 0
-            model = wordvectors(model_file,
-                                TYPE,
-                                header=(HEADER==1),
-                                kind=:text)
-        else
-            model = wordvectors(model_file,
-                                TYPE,
-                                kind=:binary,
-                                vocabulary=VOCAB_FILE)
+        for T in TYPES
+            if BINARY == 0
+                model = wordvectors(model_file,
+                                    T,
+                                    kind=:text)
+            else
+                model = wordvectors(model_file,
+                                    T,
+                                    kind=:binary,
+                                    vocabulary=VOCAB_FILE)
+            end
+            len_vecs, num_words = size(model)
+            @test model.vectors isa Matrix{T}
+            @test len_vecs == VECTOR_SIZE
         end
-        len_vecs, num_words = size(model)
-        @test model.vectors isa Matrix{TYPE}
-        @test len_vecs == VECTOR_SIZE
     end
 end
 
