@@ -15,10 +15,14 @@ Note that there is also a package called [Glove.jl](https://github.com/domluna/G
 
 ## Installation
 
-This is not an official package yet and can installed from the Julia REPL with:
 ```julia
 Pkg.clone("https://github.com/zgornel/Glowe.jl")
 ```
+for the latest `master` or
+```julia
+Pkg.add("Glowe")
+```
+for the stable versions.
 
 
 ## Documentation
