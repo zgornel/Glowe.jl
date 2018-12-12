@@ -296,21 +296,19 @@ function _from_text_header(::Type{T},
     open(filename) do f
         header = strip(readline(f))
         vocab_size, vector_size = map(x -> parse(Int, x), split(header, ' '))
-        vocab = Vector{String}(undef, vocab_size)
-        vectors = Matrix{T}(undef, vector_size, vocab_size)
+        vocab = Vector{String}(undef, vocab_size+1)  # +1 for <unk> term
+        vectors = Matrix{T}(undef, vector_size, vocab_size+1)
         i = 1
         for line in eachline(f)
-            if i > 1
-                line = strip(line)
-                parts = split(line, ' ')
-                word = parts[1]
-                vector = map(x-> parse(T, x), parts[2:end])
-                if normalize
-                    vector = vector ./ norm(vector)  # unit vector
-                end
-                vocab[i-1] = word
-                vectors[:, i-1] = vector
+            line = strip(line)
+            parts = split(line, ' ')
+            word = parts[1]
+            vector = map(x-> parse(T, x), parts[2:end])
+            if normalize
+                vector = vector ./ norm(vector)  # unit vector
             end
+            vocab[i] = word
+            vectors[:, i] = vector
             i+= 1
         end
     return WordVectors(vocab, vectors)
