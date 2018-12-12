@@ -69,12 +69,12 @@ julia> # Training (may take a while)
 The model can be imported with
 ```julia
 model = wordvectors("text8-vec.txt", Float32, header=true, kind=:text)
-# WordVectors 71290 words, 300-element Float32 vectors
+# WordVectors 71291 words, 300-element Float32 vectors
 ```
 
 The vector representation of a word can be obtained using ``get_vector``.
 ```julia
-julia> get_vector(model, "book")'
+julia> get_vector(model, "book")
 # 300-element Array{Float32,1}:
 #   0.006189716
 #   0.04822071
