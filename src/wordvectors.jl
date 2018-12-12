@@ -180,21 +180,24 @@ or binary (`:binary`); default `:text`
   presence of a header; default `nothing`
   * `normalize:Bool` specifies whether to normalize the embedding vectors
 i.e. return unit vectors; default true
-* `vocabulary::Union{Nothing, AbstractString}` path to the vocabulary
+  * `vocabulary::Union{Nothing, AbstractString}` path to the vocabulary
 file generated with `vocab_count` (needed for binary embeddings);
 default `nothing`
+  * `load_bias::Bool` specifies whether to load the bias term or not
+if using binary embedding files; default `false`
 """
 function wordvectors(filename::AbstractString,
                      ::Type{T};
                      kind::Symbol=:text,
                      header::Union{Nothing, Bool}=nothing,
                      normalize::Bool=true,
-                     vocabulary::Union{Nothing, AbstractString}=nothing
+                     vocabulary::Union{Nothing, AbstractString}=nothing,
+                     load_bias::Bool=false
                     ) where T <: Real
     if kind == :binary
         vocabulary == nothing &&
             @error "A GloVe-generated vocabulary file path must be specified."
-        return _from_binary(T, filename, vocabulary, normalize)
+        return _from_binary(T, filename, vocabulary, load_bias, normalize)
     elseif kind == :text
         header == nothing && (header = autodetect_header(filename))
         if header
@@ -253,6 +256,7 @@ wordvectors(filename::AbstractString;
 function _from_binary(::Type{T},
                       filename::AbstractString,
                       vocabulary::AbstractString,
+                      load_bias::Bool=false,
                       normalize::Bool=true) where T<:Real
     vocab = Vector{String}(undef, 0)
     open(vocabulary) do f
@@ -268,15 +272,13 @@ function _from_binary(::Type{T},
             read(f,1)
             nb+= 1
         end
-        #TODO(Corneliu): Add support for choosing whether to load or
-        #                not the bias term
-        # 2 sets of parameters, 8 bytes for a vector element
         vector_size = Int(nb / (2 * 8 * vocab_size))
-        vectors = Matrix{T}(undef, vector_size-1, vocab_size)
+        vector_mask = 1 : (vector_size - ifelse(load_bias, 0, 1))
+        vectors = Matrix{T}(undef, length(vector_mask), vocab_size)
         binary_length = sizeof(Float64) * vector_size
         seekstart(f)
         for i in 1:vocab_size
-            vector = reinterpret(Float64, read(f, binary_length))[1:end-1]  # remove bias
+            vector = reinterpret(Float64, read(f, binary_length))[vector_mask]
             if normalize
                 vector = vector ./ norm(vector)  # unit vector
             end
