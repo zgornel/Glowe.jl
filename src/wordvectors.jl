@@ -163,7 +163,7 @@ end
 
 
 """
-    wordvectors(filename [,type=Float64][; kind=:text, header=false, normalize=true])
+    wordvectors(filename [,type=Float64][; kind=:text, header=false, normalize=true, vocabulary=nothing])
 
 Generate a WordVectors type object from a file.
 
@@ -180,16 +180,20 @@ or binary (`:binary`); default `:text`
   presence of a header; default `nothing`
   * `normalize:Bool` specifies whether to normalize the embedding vectors
 i.e. return unit vectors; default true
-* `vocabulary::AbstractString` path to the vocabulary file generated
-with `vocab_count` (needed for binary embeddings); default ""
+* `vocabulary::Union{Nothing, AbstractString}` path to the vocabulary
+file generated with `vocab_count` (needed for binary embeddings);
+default `nothing`
 """
 function wordvectors(filename::AbstractString,
                      ::Type{T};
                      kind::Symbol=:text,
                      header::Union{Nothing, Bool}=nothing,
                      normalize::Bool=true,
-                     vocabulary::AbstractString="") where T <: Real
+                     vocabulary::Union{Nothing, AbstractString}=nothing
+                    ) where T <: Real
     if kind == :binary
+        vocabulary == nothing &&
+            @error "A GloVe-generated vocabulary file path must be specified."
         return _from_binary(T, filename, vocabulary, normalize)
     elseif kind == :text
         header == nothing && (header = autodetect_header(filename))
@@ -239,8 +243,10 @@ end
 wordvectors(filename::AbstractString;
             kind::Symbol=:text,
             header::Bool=false,
-            normalize::Bool=true) =
-    wordvectors(filename, Float64, kind=kind, header=header, normalize=normalize)
+            normalize::Bool=true,
+            vocabulary::Union{Nothing, AbstractString}=nothing) =
+    wordvectors(filename, Float64, kind=kind, header=header,
+                normalize=normalize, vocabulary=vocabulary)
 
 
 # Generate a WordVectors object from binary file
@@ -280,6 +286,7 @@ function _from_binary(::Type{T},
     end
 end
 
+
 # Generate a WordVectors object from text file
 function _from_text_header(::Type{T},
                            filename::AbstractString,
@@ -307,6 +314,7 @@ function _from_text_header(::Type{T},
     return WordVectors(vocab, vectors)
     end
 end
+
 
 # Generate a WordVectors object from text file
 function _from_text(::Type{T},
