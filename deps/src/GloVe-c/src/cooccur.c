@@ -254,7 +254,7 @@ int merge_files(int num) {
     CRECID *pq, new, old;
     char filename[200];
     FILE **fid, *fout;
-    fid = malloc(sizeof(FILE) * num);
+    fid = malloc(sizeof(FILE*) * num);
     pq = malloc(sizeof(CRECID) * num);
     fout = stdout;
     if (verbose > 1) fprintf(stderr, "Merging cooccurrence files: processed 0 lines.");
